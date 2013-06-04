@@ -1,0 +1,106 @@
+unit GMRL.Core.Client;
+
+interface
+
+uses Macro;
+
+type 
+  TSCARClient = class abstract  
+  protected
+    FTarget: TTarget;
+  public           
+    destructor Destroy; override;
+  
+    procedure Activate;      
+    function Clone: TSCARClient; virtual; abstract;  
+    function Exists: Boolean; 
+    function Update: Boolean;
+    
+    property Target: TTarget read FTarget; 
+    property InputArea: TBox read (FTarget.InputArea) write (FTarget.InputArea);  
+    property ImageArea: TBox read (FTarget.ImageArea) write (FTarget.ImageArea); 
+  end;    
+  
+  TSCARWindowClient = class(TSCARClient)  
+  private
+    constructor CreateBareClient; 
+  public     
+    constructor Create(Handle: Integer);
+    
+    function Clone: TSCARClient; override;
+                                                                                                       
+    property ClientArea: Boolean read ((FTarget as TWndTarget).ClientArea) write ((FTarget as TWndTarget).ClientArea);                     
+    property DC: Integer read ((FTarget as TWndTarget).DC) write ((FTarget as TWndTarget).DC);          
+    //http://code.google.com/p/dwscript/issues/detail?id=370
+    //property Handle: Integer read ((FTarget as TWndTarget).Handle) write ((FTarget as TWndTarget).Handle);  
+    //property ScanCodes: Boolean read ((FTarget as TWndTarget).ScanCodes) write ((FTarget as TWndTarget).ScanCodes);                                                                                                 
+  end;
+  
+function GetClient: TSCARClient;    
+function SetClient(Client: TSCARClient): TSCARClient;
+  
+implementation
+
+var CurrentClient: TSCARClient;  
+var EndingScript: Boolean = False;
+  
+function GetClient: TSCARClient;
+begin                           
+  if CurrentClient = nil then
+    raise Exception.Create('No client set!');
+  Result := CurrentClient;
+end;
+
+function SetClient(Client: TSCARClient): TSCARClient;
+begin
+  if Client = nil then
+    raise Exception.Create('Invalid client!');
+  Result := CurrentClient;
+  CurrentClient := Client;
+end;
+
+{ TSCARClient }
+               
+procedure TSCARClient.Activate;
+begin
+  FTarget.Activate;
+end;   
+
+destructor TSCARClient.Destroy;
+begin
+  if (Self = CurrentClient) and not EndingScript then
+    raise Exception.Create('Can''t destroy active client!');
+end;      
+
+function TSCARClient.Exists: Boolean;
+begin
+  Result := FTarget.Exists;
+end;      
+
+function TSCARClient.Update: Boolean;
+begin
+  Result := FTarget.Update;
+end;       
+
+{ TSCARWindowClient }  
+
+function TSCARWindowClient.Clone: TSCARClient;
+begin
+  Result := TSCARWindowClient.CreateBareClient;      
+  Result.FTarget := Self.Target.Clone as TTarget;
+end; 
+               
+constructor TSCARWindowClient.CreateBareClient;
+begin
+end;   
+               
+constructor TSCARWindowClient.Create(Handle: Integer);
+begin
+  FTarget := TWndTarget.Create(Handle);
+end;   
+
+initialization
+finalization
+  EndingScript := True;  
+  CurrentClient.Free;
+end.

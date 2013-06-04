@@ -1,0 +1,313 @@
+unit GMRL.Core.Timing;
+
+interface
+
+  function WaitRR(Min, Max: Integer): Integer;
+  function WaitFunc(Func: function: Boolean; DesiredResult: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: Integer): Boolean;
+  function WaitFindColorEx(var TPA: TPointArray; Color: Integer; B: TBox; DesiredCount: Integer; GreaterThan: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: Integer): Boolean;
+  function WaitFindColorTol(var P: TPoint; Color: Integer; B: TBox; Tol: Integer; DesiredResult: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: Integer): Boolean;
+  function WaitFindColorTolEx(var TPA: TPointArray; Color: Integer; B: TBox; Tol, DesiredCount: Integer; GreaterThan: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: Integer): Boolean;
+  procedure DoNothing;
+  function TheTime: string;
+  function TheDate(Format: Integer): string;
+  function TheMonth: string;  
+  procedure ConvertTime(Milis: Integer; var Hrs: Integer; var Mins: Integer; var Secs: Integer);
+  function MSToTime(MS: Integer): string;
+  
+implementation
+uses 
+  GMRL.Core.Types, GMRL.Core.Math, GMRL.Core.Color;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function WaitRR(Min, Max: Integer): Integer;
+Contributors: Wanted, ShadowRecon.
+Description: Sleeps for a random time between min and max, includes min and max.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function WaitRR(Min, Max: Integer): Integer;
+begin
+  Result := RR(Min, Max);
+  Sleep(Result);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function WaitFunc(Func: function: Boolean; DesiredResult: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: LongInt): Boolean;
+Contributors: Wanted, ShadowRecon.
+Description: Repeats a function until DesiredResult.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function WaitFunc(Func: function: Boolean; DesiredResult: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: Integer): Boolean;
+var
+  T: Integer;
+begin
+  Result := True;
+  T := GetSystemTime + RR(MinTotalWait, MaxTotalWait);
+  while (GetSystemTime < T) do
+    if (Func() = DesiredResult) then
+      Exit
+    else
+      WaitRR(MinWait, MaxWait);
+  Result := False;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function WaitFindColorEx(var TPA: TPointArray; Color: Integer; B: TBox; DesiredCount: Integer; GreaterThan: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: LongInt): Boolean;
+Contributors: Wanted, Freddy, ShadowRecon.
+Description: Repeats FindColorEx until greater or less than Count.
+Date Created: March 9th, 2013. By Wanted
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function WaitFindColorEx(var TPA: TPointArray; Color: Integer; B: TBox; DesiredCount: Integer; GreaterThan: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: Integer): Boolean;
+var
+  T, L: Integer;
+begin
+  Result := True;
+  T := GetSystemTime + RR(MinTotalWait, MaxTotalWait);
+  while (GetSystemTime < T) do
+  begin  
+    FindColorEx(TPA, Color, B.X1, B.Y1, B.X2, B.Y2);
+    L := Length(TPA);
+    if (GreaterThan) then
+    begin
+      if (L > DesiredCount) then
+        Exit;
+    end
+    else
+      if (L < DesiredCount) then
+        Exit;
+    WaitRR(MinWait, MaxWait);
+  end;
+  Result := False;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function WaitFindColorTol(var P: TPoint; Color: Integer; B: TBox; Tol: Integer; DesiredResult: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: LongInt): Boolean;
+Contributors: Wanted, Freddy.
+Description: Repeats FindColorTol until DesiredResult.
+Date Created: September 26th, 2011. By Wanted
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function WaitFindColorTol(var P: TPoint; Color: Integer; B: TBox; Tol: Integer; DesiredResult: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: Integer): Boolean;
+var
+  T: Integer;
+begin
+  Result := True;
+  T := GetSystemTime + RR(MinTotalWait, MaxTotalWait);
+  while (GetSystemTime < T) do
+    if (FindColorTol(P.X, P.Y, Color, B.X1, B.Y1, B.X2, B.Y2, Tol) = DesiredResult) then
+      Exit
+    else
+      WaitRR(MinWait, MaxWait);
+  Result := False;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function WaitFindColorTolEx(var TPA: TPointArray; Color: Integer; B: TBox; Tol, DesiredCount: Integer; GreaterThan: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: LongInt): Boolean;
+Contributors: Wanted, Freddy.
+Description: Repeats FindColorTolEx until greater or less than Count.
+Date Created: October 28th, 2011. By Wanted
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function WaitFindColorTolEx(var TPA: TPointArray; Color: Integer; B: TBox; Tol, DesiredCount: Integer; GreaterThan: Boolean; MinWait, MaxWait, MinTotalWait, MaxTotalWait: Integer): Boolean;
+var
+  T, L: Integer;
+begin
+  Result := True;
+  T := GetSystemTime + RR(MinTotalWait, MaxTotalWait);
+  while (GetSystemTime < T) do
+  begin
+    FindColorTolEx(TPA, Color, B.X1, B.Y1, B.X2, B.Y2, Tol);
+    L := Length(TPA);
+    if (GreaterThan) then
+    begin
+      if (L > DesiredCount) then
+        Exit;
+    end
+    else
+      if (L < DesiredCount) then
+        Exit;
+    WaitRR(MinWait, MaxWait);
+  end;
+  Result := False;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure DoNothing;
+Contributors: Wanted
+Description: For use with while (this) do DoNothing
+Date Created: August 10th, 2011. By Wanted
+Last Modified: August 10th, 2011. By Wanted
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure DoNothing;
+begin
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function TheTime: string;
+By: Timer
+Description: Gets the Time.
+Date Created: August 7th, 2011. By Timer
+Last Modified: August 7th, 2011. By Timer
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function TheTime: string;
+var
+  Hour, Minz, Sec, MSec: Integer;
+  Padding: string;
+begin
+  DecodeTime(Now, Hour, Minz, Sec, MSec);
+  Padding := 'AM';
+  if (Hour > 12) then
+  begin
+    Hour := Hour - 12;
+    Padding := 'PM';
+  end else
+    if (Hour = 12) then
+      Padding := 'PM';
+  Result := IntToStr(Hour) + ':' + IntToStr(Minz) + ':' + IntToStr(Sec) + ' ' + Padding;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function TheDate(Format: Integer): string;
+By: Timer, Freddy.
+Description: Gets the Date. Format of 0 = Month Day, Year
+                            Format of 1 = Month-Day-Year abreviated 
+Date Created: August 7th, 2011. By Timer
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function TheDate(Format: Integer): string;
+var
+  Year, Month, Day: Integer;
+  Months, suffixs: TStringArray;
+  suffix: string;
+begin
+  DecodeDate(Date, Year, Month, Day);
+  Months := ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+            'August', 'September', 'October', 'November', 'December'];
+  suffixs := ['st', 'nd', 'rd'];
+  if (InRange(Day mod 10, 1, 3)) and (not InRange(Day, 11, 13)) then
+    suffix := suffixs[(Day mod 10) - 1]
+  else
+    suffix := 'th';                                                 
+  case Format of
+    0 : Result := Months[Month - 1] + ' ' + IntToStr(Day) + suffix + ', ' + IntToStr(Year);
+    1 : Result := IntToStr(Month) + '-' + IntToStr(Day) + '-' + IntToStr(Year);
+  end;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function TheMonth: string;
+By: Timer, Freddy.
+Description: Gets the Month.
+Date Created: August 7th, 2011. By Timer
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function TheMonth: string;
+var
+  Year, Month, Day: Integer;
+  Months: TStringArray;
+begin
+  DecodeDate(Date, Year, Month, Day);
+  Months := ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+            'August', 'September', 'October', 'November', 'December'];
+  Result := Months[Month - 1];
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure converttime(Milis: Integer; var Hrs: Integer; var Mins: Integer; var Secs: Integer);
+By: ShadowRecon.
+Description: Returns MS in hours, minutes, seconds.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure ConvertTime(Milis: Integer; var Hrs: Integer; var Mins: Integer; var Secs: Integer);
+begin
+  Hrs := Round(Milis div 3600000);
+  Mins := Round((Milis - (Hrs * 3600000)) div 60000);  
+  Secs := ((Milis - ((Hrs * 3600000) + (Mins * 60000))) div 1000);
+end; 
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function MSToTime(MS: LongInt): string;
+By: Timer, Freddy, Wanted.
+Description: Returns MS in days, hours, minutes, seconds.
+Date Created: August 7th, 2011. By Timer
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function MSToTime(MS: Integer): string;
+var
+  tD, tH, tM, tS: Integer;
+  TheTimeRInfo: array[0..3] of TStringArray;
+  tDD, tHH, tMM, tSS: Boolean;
+begin
+  if (MS < 1000) then
+    begin
+      Result := IntToStr(MS) + ' milliseconds';
+      Exit;
+    end;
+  ConvertTime(MS, tH, tM, tS);
+  TheTimeRInfo[0] := [' day, ', ' days, ', ' day ', ' days '];
+  TheTimeRInfo[1] := [' hour, ', ' hours, ', ' hour ', ' hours'];
+  TheTimeRInfo[2] := [' minute, ', ' minutes, ', ' minute', ' minutes '];
+  TheTimeRInfo[3] := [' second', ' seconds'];
+  tD := tH div 24;
+  tDD := tD > 0;
+  tHH := tH > 0;
+  tMM := tM > 0;
+  tSS := tS > 0;
+  if (tDD) then
+    tH := tH - (tD * 24);
+  if (tDD) then
+    if (tD > 1) then
+      if (tHH) or (tMM) or (tSS) then
+        Result := Result + IntToStr(tD) + TheTimeRInfo[0][1]
+      else
+        Result := Result + IntToStr(tD) + TheTimeRInfo[0][3]
+    else
+      if (tHH) or (tMM) or (tSS) then
+        Result := Result + IntToStr(tD) + TheTimeRInfo[0][0]
+      else
+        Result := Result + IntToStr(tD) + TheTimeRInfo[0][2];
+  if (tHH) then
+    if (tH > 1) then
+      if (tMM) or (tSS) then
+        Result := Result + IntToStr(tH) + TheTimeRInfo[1][1]
+      else
+        Result := Result + IntToStr(tH) + TheTimeRInfo[1][3]
+    else
+      if (tMM) or (tSS) then
+        Result := Result + IntToStr(tH) + TheTimeRInfo[1][0]
+      else
+        Result := Result + IntToStr(tH) + TheTimeRInfo[1][2];
+  if (tMM) then
+    if (tM > 1) then
+      if (tSS) then
+        Result := Result + IntToStr(tM) + TheTimeRInfo[2][1]
+      else
+        Result := Result + IntToStr(tM) + TheTimeRInfo[2][3]
+    else
+      if (tSS) then
+        Result := Result + IntToStr(tM) + TheTimeRInfo[2][0]
+      else
+        Result := Result + IntToStr(tM) + TheTimeRInfo[2][2];
+  if (tSS) then
+    if (tS > 1) then
+      Result := Result + IntToStr(tS) + TheTimeRInfo[3][1]
+    else
+      Result := Result + IntToStr(tS) + TheTimeRInfo[3][0];
+end;
+
+
+end.

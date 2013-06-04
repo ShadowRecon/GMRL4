@@ -1,0 +1,275 @@
+unit GMRL.Core.Math;
+
+interface
+
+  function InRange(Value, Min, Max: Integer): Boolean; overload; 
+  function InRange(Value, Min, Max: Float): Boolean; overload;
+  procedure IncE(var value: Float; Amt: Float);
+  function RndRange(Min, Max: Integer): Integer;
+  function RR(Min, Max: Integer): Integer; 
+  function RandomRectanglePoint(X1, Y1, X2, Y2: Integer): TPoint; overload;
+  function RandomRectanglePoint(Sp, Ep: TPoint): TPoint; overload;  
+  function RandomRectanglePoint(Box: TBox): TPoint; overload;  
+  function RandomCirclePoint(CX, CY: Integer; Radius: Integer): TPoint; overload;  
+  function RandomCirclePoint(P: TPoint; Radius: Integer): TPoint; overload;
+  function RadiansToDegrees(Radians: Float): Float;  
+  function DegreesToRadians(Degrees: Float): Float;  
+  procedure CartesianToPolarRadians(X, Y: Integer; var Radius: Float; var Radians: Float); overload;
+  procedure CartesianToPolarRadians(P: TPoint; var Radius: Float; var Radians: Float); overload; 
+  procedure CartesianToPolarDegrees(X, Y: Integer; var Radius: Float; var Degrees: Float); overload;
+  procedure CartesianToPolarDegrees(P: TPoint; var Radius: Float; var Degrees: Float); overload;
+  function PolarToCartesianRadians(Radius, Radians: Float): TPoint; 
+  function PolarToCartesianDegrees(Radius: Float; Degrees: Float): TPoint; 
+
+  
+implementation
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function InRange(Value, Min, Max: Integer): Boolean;
+Contributors: ShadowRecon.
+Description: Determines if value is in range of min and max, including min and max.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function InRange(Value, Min, Max: Integer): Boolean; overload;
+begin
+  Result := (Value >= Min) and (Value <= Max)
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function InRange(Value, Min, Max: Integer): Boolean;
+Contributors: ShadowRecon.
+Description: Determines if value is in range of min and max, including min and max.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function InRange(Value, Min, Max: Float): Boolean; overload;
+begin
+  Result := (Value >= Min) and (Value <= Max)
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure IncE(var value: Float; Amt: Float);
+Contributors: ShadowRecon.
+Description: Distance formula.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure IncE(var value: Float; Amt: Float);
+begin
+  Value := Value + Amt;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RndRange(Min, Max: Integer): Integer;
+Contributors: ShadowRecon.
+Description: Creates a random number including the min and max.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RndRange(Min, Max: Integer): Integer;
+begin
+  repeat
+    Result := (Random(Max) + Random(Min));
+    if Result > Max then
+      Result := Result - Max;
+    if Result < Min then
+      Result := Result + Min;  
+  until (Result >= Min) and (Result <= Max);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RR(Min, Max: Integer): Integer;
+Contributors: ShadowRecon.
+Description: Wrapper for RndRange.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RR(Min, Max: Integer): Integer;
+begin
+  Result := RndRange(Min, Max);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RandomRectanglePoint(X1, Y1, X2, Y2: Integer): TPoint; overload;
+Contributors: ShadowRecon.
+Description: Creates a random point in a rectangle.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RandomRectanglePoint(X1, Y1, X2, Y2: Integer): TPoint; overload;
+begin
+  Result.X := RndRange(X1, X2); 
+  Result.Y := RndRange(Y1, Y2);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RandomRectanglePoint(Sp, Ep: TPoint): TPoint; overload;
+Contributors: ShadowRecon.
+Description: Creates a random point in a rectangle.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RandomRectanglePoint(Sp, Ep: TPoint): TPoint; overload;
+begin
+  Result := RandomRectanglePoint(SP.X, SP.Y, EP.X, EP.Y);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RandomRectanglePoint(Box: TBox): TPoint; overload;
+Contributors: ShadowRecon.
+Description: Creates a random point in a rectangle.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RandomRectanglePoint(Box: TBox): TPoint; overload;
+begin
+  Result := RandomRectanglePoint(Box.X1, Box.Y1, Box.X2, Box.Y2);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RandomCirclePoint(CX, CY: Integer; Radius: Integer): TPoint; overload;
+Contributors: ShadowRecon.
+Description: Creates a random point in a circle.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RandomCirclePoint(CX, CY: Integer; Radius: Integer): TPoint; overload;
+begin
+  Result.X := RR(CX - Radius, CX + Radius);
+  Result.Y := RR(CY - Radius, CY + Radius);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RandomCirclePoint(P: TPoint; Radius: Integer): TPoint;
+Contributors: ShadowRecon.
+Description: Creates a random point in a circle.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RandomCirclePoint(P: TPoint; Radius: Integer): TPoint; overload;
+begin
+  Result.X := RR(P.X - Radius, P.X + Radius);
+  Result.Y := RR(P.Y - Radius, P.Y + Radius);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RadiansToDegrees(Radians: Float): Float;
+Contributors: ShadowRecon.
+Description: Radians To Degrees.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RadiansToDegrees(Radians: Float): Float;
+begin
+  Result := Radians * (180 / 3.14159265359);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function DegreesToRadians(Degrees: Float): Float; 
+Contributors: ShadowRecon.
+Description: Degrees To Radians.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function DegreesToRadians(Degrees: Float): Float; 
+begin
+  Result := Degrees * (3.14159265359 / 180);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure CartesianToPolarRadians(X, Y: Integer; var Radius: Float; var Radians: Float); overload;
+Contributors: ShadowRecon.
+Description: Cartesian point to Polar Point angle in radians.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure CartesianToPolarRadians(X, Y: Integer; var Radius: Float; var Radians: Float); overload;
+begin
+  Radius := Sqrt(Sqr(X) + Sqr(Y));
+  Radians := ArcTan(Y / X);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure CartesianToPolarRadians(P: TPoint; var Radius: Float; var Radians: Float); overload;
+Contributors: ShadowRecon.
+Description: Cartesian point to Polar Point angle in radians.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure CartesianToPolarRadians(P: TPoint; var Radius: Float; var Radians: Float); overload;
+begin
+  Radius := Sqrt(Sqr(P.X) + Sqr(P.Y));
+  Radians := ArcTan(P.Y / P.X);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure CartesianToPolarDegrees(X, Y: Integer; var Radius: Float; var Degrees: Float); overload;
+Contributors: ShadowRecon.
+Description: Cartesian point to Polar Point and in degrees.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure CartesianToPolarDegrees(X, Y: Integer; var Radius: Float; var Degrees: Float); overload;
+begin
+  CartesianToPolarRadians(X, Y, Radius, Degrees);
+  Degrees := RadiansToDegrees(Degrees); 
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure CartesianToPolarDegrees(P: TPoint; var Radius: Float; var Degrees: Float); overload;
+Contributors: ShadowRecon.
+Description: Cartesian point to Polar Point angle in degrees.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure CartesianToPolarDegrees(P: TPoint; var Radius: Float; var Degrees: Float); overload;
+begin
+  CartesianToPolarRadians(P, Radius, Degrees);
+  Degrees := RadiansToDegrees(Degrees); 
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function PolarToCartesianRadians(Radius, Radians: Float): TPoint;
+Contributors: ShadowRecon.
+Description: Polar to Cartesian using Radians.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function PolarToCartesianRadians(Radius, Radians: Float): TPoint;
+begin
+  Result.X := Round(Radius * Cos(Radians)); 
+  Result.Y := Round(Radius * Sin(Radians));
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function PolarToCartesianDegrees(Radius: Float; Degrees: Float): TPoint; 
+Contributors: ShadowRecon.
+Description: Polar to Cartesian using degrees.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function PolarToCartesianDegrees(Radius: Float; Degrees: Float): TPoint; 
+begin
+  Result := PolarToCartesianRadians(Radius, DegreesToRadians(Degrees));
+end;
+
+end.

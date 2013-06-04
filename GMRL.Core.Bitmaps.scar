@@ -1,0 +1,114 @@
+unit GMRL.Core.Bitmaps;
+
+interface
+
+uses
+  Bitmaps;
+  
+  function FindBitmapColorsTolExIn(var TPA: TPointArray; Colors: TIntArray; bmp: TBitmap; B: TBox; Tol: Integer): Boolean;
+  function FindBitmapColorTolIn(var P: TPoint; Color: Integer; bmp: TBitmap; B: TBox; Tol: Integer): Boolean;
+  function FindBitmapColorTol(var P: TPoint; Color: Integer; bmp: TBitmap; Tol: Integer): Boolean;
+  function FindBitmapColor(var P: TPoint; Color: Integer; bmp: TBitmap): Boolean;
+  
+implementation
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function FindBitmapColorsTolExIn(var TPA: TPointArray; Colors: TIntArray; bmp: TBitmap; B: TBox; Tol: Integer): Boolean;
+Contributors: ShadowRecon.
+Description: Finds colors on bitmap inside area.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function FindBitmapColorsTolExIn(var TPA: TPointArray; Colors: TIntArray; bmp: TBitmap; B: TBox; Tol: Integer): Boolean;
+begin
+    var tmpBMP : TBitmap;
+    tmpBMP := bmp;
+    tmpBMP.Crop(B); // I hope this isnt cropping the orgianls and i havent just assigned this bitmap the handle?
+    Result := tmpBMP.FindColor(TPA, Colors);
+  try 
+    tmpBMP.Free;   
+  except
+  end; 
+  for var i := 0 to High(TPA) do // Make the points relitive to the client since we cropped  the bmp
+  begin
+    TPA[I].X := TPA[I].X + B.X1;
+    TPA[I].Y := TPA[I].Y + B.Y1;
+  end;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function FindBitmapColorTolIn(var P: TPoint; Color: Integer; bmp: TBitmap; B: TBox; Tol: Integer): Boolean;
+Contributors: ShadowRecon.
+Description: Finds color on bitmap inside area with tolerance.
+Date Created: June 3rd, 2013. By ShadowRecon. 
+Last Modified: June 3rd, 2013. By ShadowRecon. 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function FindBitmapColorTolIn(var P: TPoint; Color: Integer; bmp: TBitmap; B: TBox; Tol: Integer): Boolean;
+begin
+    var tmpBMP : TBitmap;
+    tmpBMP := bmp;
+    tmpBMP.Crop(B); 
+    Result := tmpBMP.FindColor(P, [Color], Tol);
+  try 
+    tmpBMP.Free;   
+  except
+  end;
+    P.X := P.X + B.X1;
+    P.Y := P.Y + B.Y1;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function FindBitmapColorTol(var P: TPoint; Color: LongInt; bmp: TSCARBitmap): Boolean;
+Contributors: Wanted, Janilabo, ShadowRecon.
+Description: Finds color on bitmap.
+Date Created: March 7th, 2013. By Wanted
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function FindBitmapColorTol(var P: TPoint; Color: Integer; bmp: TBitmap; Tol: Integer): Boolean;
+begin
+  Result := FindBitmapColorTolIn(P, Color, bmp, Box(0, 0, bmp.Width - 1, bmp.Height - 1), Tol);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function FindBitmapColor(var P: TPoint; Color: LongInt; bmp: TSCARBitmap): Boolean;
+Contributors: Wanted, Janilabo, ShadowRecon.
+Description: Finds color on bitmap.
+Date Created: March 7th, 2013. By Wanted
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function FindBitmapColor(var P: TPoint; Color: Integer; bmp: TBitmap): Boolean;
+begin
+  Result := FindBitmapColorTolIn(P, Color, bmp, Box(0, 0, bmp.Width - 1, bmp.Height - 1), 0);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function FastReplaceBitmapColors(ColorsToReplace, ReplaceColorsWith: TIntArray; bmp: TBitmap): Boolean;
+Contributors: ShadowRecon.
+Description: Finds ColorsToReplace on bitmap and replaces them with the ReplaceColorsWith. 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function FastReplaceBitmapColors(ColorsToReplace, ReplaceColorsWith: TIntArray; bmp: TBitmap): Boolean;
+begin
+  var L1 := Length(ColorsToReplace);
+  var L2 := Length(ReplaceColorsWith);
+  if L1 <> L2 then
+    Exit;  
+
+  var TPA : TPointArray;
+  
+  For var I := 0 to (L1 - 1) do
+    if bmp.FindColor(TPA, [ColorsToReplace[I]]) then
+      For var II := 0 to (Length(TPA) - 1) do
+      begin
+        bmp.Pixels[TPA[II]] := ReplaceColorsWith[I]; 
+        Result := True; 
+      end;  
+end;                   
+
+end.

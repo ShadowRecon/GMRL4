@@ -1,0 +1,107 @@
+unit GMRL.Core.Points;
+
+interface
+uses 
+  GMRL.Core.Types;
+    
+  function Point(X, Y: Integer): TPoint;
+  function RndPoint(SP: TPoint; RX, RY: Integer): TPoint; 
+  function RndPointInArea(SP, EP: TPoint): TPoint;
+  function Distance(X1, Y1, X2, Y2: Integer): Float; overload;
+  function Distance(P1, P2: TPoint): Float; overload;
+  
+implementation
+
+uses
+  GMRL.Core.Math;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function Point(X, Y: Integer): TPoint;
+Contributors: ShadowRecon.
+Description: Creates a TPoint from x and y.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function Point(X, Y: Integer): TPoint;
+begin 
+  Result.X := X;
+  Result.Y := Y;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RndPoint(SP: TPoint; RX, RY: Integer): TPoint;
+Contributors: ShadowRecon.
+Description: Creates a random point with SP as the start point modified + or - by RX and RY.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RndPoint(SP: TPoint; RX, RY: Integer): TPoint;
+begin
+  Result := RandomRectanglePoint(Point(SP.X - RX, SP.Y - RY), Point(SP.X + RX, SP.Y + RY));
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RndPoint(SP: TPoint; RX, RY: Integer): TPoint;
+Contributors: ShadowRecon.
+Description: Creates a random point with SP as the start point modified + or - by RX and RY.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RndPointInArea(SP, EP: TPoint): TPoint;
+begin
+  Result := RandomRectanglePoint(SP, EP);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function Distance(X1, Y1, X2, Y2: Integer): Float;
+Contributors: ShadowRecon.
+Description: Distance formula.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function Distance(X1, Y1, X2, Y2: Integer): Float; overload;
+begin
+  Result := Sqrt(Sqr(X2-X1) + Sqr(Y2 - Y1));
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function Distance(P1, P2: TPoint): Float; overload;
+Contributors: ShadowRecon.
+Description: Distance formula.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function Distance(P1, P2: TPoint): Float; overload;
+begin
+  Result := Sqrt(Sqr(P2.X - P1.X) + Sqr(P2.Y - P1.Y));
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function GetPointAngleDegrees(P1, P2: TPoint): Float;
+Contributors: Wanted, Janilabo.
+Description: Calculates the relative angle between two points in degrees.
+Date Created: October 28th, 2011. By Wanted
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function GetPointAngleDegrees(P1, P2: TPoint): Float;
+begin
+  Result := RadiansToDegrees(ArcTan2(P1.Y - P2.Y, P1.X - P2.X)); 
+  if (Result < 0.0) then
+    IncE(Result, 360.0);
+  {$IFDEF RS2}  
+    IncE(Result, 90.0);
+  {$ENDIF}
+  {$IFDEF RS07}  
+    IncE(Result, 90.0);
+  {$ENDIF}  
+end;
+
+ 
+
+end.

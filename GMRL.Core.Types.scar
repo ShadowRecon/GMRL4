@@ -1,0 +1,21 @@
+unit GMRL.Core.Types;
+
+interface
+
+type 
+  TStringArray = array of String;
+   
+  TBoxHelper = helper for TBox    
+    function Contains(Pt: TPoint): Boolean;
+    property Height: Integer read (Y2 - Y1 + 1);  
+    property Width: Integer read (X2 - X1 + 1);
+  end; 
+    
+implementation
+
+function TBoxHelper.Contains(Pt: TPoint): Boolean;
+begin
+  Result := (X1 <= Pt.X) and (Y1 <= Pt.Y) and (X2 >= Pt.X) and (Y2 >= Pt.Y);
+end;
+
+end.

@@ -1,0 +1,4 @@
+unit namespace GMRL;
+
+uses
+  GMRL.Core;

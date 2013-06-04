@@ -1,0 +1,447 @@
+unit GMRL.Core.Mouse;
+
+interface
+uses
+  GMRL.Core.Points; 
+  
+type
+  TMouseButton = (mbLeft = 0, mbRight = 1, mbMiddle = 2);   
+  TCursor = (crDefault = 0, crNone = -1, crArrow = -2, crCross = -3, crIBeam = -4,  
+    crSize = -22, crSizeNESW = -6, crSizeNS = -7, crSizeNWSE = -8, crSizeWE = -9,
+    crUpArrow = -10, crHourGlass = -11, crDrag = -12, crNoDrop = -13, crHSplit = -14,
+    crVSplit = -15, crMultiDrag = -16, crSQLWait = -17, crNo = -18, crAppStart = -19,
+    crHelp = -20, crHandPoint = -21, crSizeAll = -22);   
+    
+  procedure GetMousePos(var X, Y: Integer); overload; 
+  function MouseInBox(Box: TBox): Boolean;
+  procedure SetMousePos(X, Y: Integer);   
+  procedure MouseBtnDown(X, Y: Integer; Btn: TMouseButton); 
+  procedure MouseBtnUp(X, Y: Integer; Btn: TMouseButton);
+  procedure ClickMouse(X, Y: Integer; Btn: TMouseButton);
+  procedure MoveMouseExpert(X, Y, Gravity, Wind, MinWait, MaxWait, MaxStep, 
+    TargetArea: Float);
+  procedure MoveMouseEx(X, Y, MouseSpeed: Integer);
+  procedure MoveMouse(X, Y: Integer);
+  procedure MoveMouseBox(Box: TBox);
+  procedure MoveMouseBoxEx(Box: TBox; MouseSpeed: Integer);
+  function GetCursorType: TCursor; 
+  function GetMouseBtnState(Btn: TMouseButton): Boolean;
+ 
+  procedure GetMousePos(var P: TPoint); overload; 
+  function GetMousePos: TPoint; overload;
+  function MMouse(X, Y, RX, RY: Integer): TPoint; overload;
+  function MMouse(P: TPoint; RX, RY: Integer): TPoint; overload;  
+  function MMouse(P: TPoint): TPoint; overload; 
+  function MMouse(Box: TBox): TPoint; overload; 
+  function MMouse(CX, CY, Radius: Integer): TPoint; overload;   
+  function MMouse(P: TPoint; Radius: Integer): TPoint; overload;
+  function HoldMouseWait(X, Y, RX, RY, MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload; 
+  function HoldMouseWait(P: TPoint; RX, RY, MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload;
+  function HoldMouseWaitBox(X1, Y1, X2, Y2, MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload;
+  function HoldMouseWaitBox(B: TBox; MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload;
+  function Mouse(X, Y, RX, RY: Integer; Btn: TMouseButton): TPoint; overload; 
+  function Mouse(P: TPoint; RX, RY: Integer; Btn: TMouseButton): TPoint; overload; 
+  function Mouse(P: TPoint; Btn: TMouseButton): TPoint; overload;
+  function Mouse(Box: TBox; Btn: TMouseButton): TPoint; overload;
+  function Mouse(CX, CY, Radius: Integer; Btn: TMouseButton): TPoint; overload;
+  function Mouse(P: TPoint; Radius: Integer; Btn: TMouseButton): TPoint; overload; 
+  function DragMouse(SX, SY, SRX, SRY, EX, EY, ERX, ERY: Integer; Btn: TMouseButton): TPoint; overload; 
+  function DragMouse(SP: TPoint; SRX, SRY: Integer; EP: TPoint; ERX, ERY: Integer; Btn: TMouseButton): TPoint; overload;
+  function DragMouse(SBox, EBox: TBox; Btn: TMouseButton): TPoint; overload;
+  
+  
+implementation
+
+uses 
+  GMRL.Core.Math, GMRL.Core.Timing, GMRL.Core.Types, GMRL.Core.Client;  
+  
+procedure GetMousePos(var X, Y: Integer); overload; 
+begin
+  var Pt = GetClient.Target.MousePos;    
+  X := Pt.X;
+  Y := Pt.Y;
+end;
+
+function MouseInBox(Box: TBox): Boolean;
+begin
+  Result := Box.Contains(GetClient.Target.MousePos);
+end;
+
+procedure SetMousePos(X, Y: Integer);
+begin
+  GetClient.Target.MousePos := Point(X, Y);
+end;          
+
+procedure MouseBtnDown(X, Y: Integer; Btn: TMouseButton);
+var
+  Client: TSCARClient;   
+  Pt: TPoint;    
+begin
+  Client := GetClient;
+  Pt := Client.Target.MousePos;
+  if (Pt.X <> X) or (Pt.Y <> Y) then
+    Client.Target.MousePos := Point(X, Y); 
+  Client.Target.MouseDown(Btn);
+end;
+
+procedure MouseBtnUp(X, Y: Integer; Btn: TMouseButton);
+var
+  Client: TSCARClient;   
+  Pt: TPoint;    
+begin
+  Client := GetClient;
+  Pt := Client.Target.MousePos;
+  if (Pt.X <> X) or (Pt.Y <> Y) then
+    Client.Target.MousePos := Point(X, Y); 
+  Client.Target.MouseUp(Btn);
+end;
+
+procedure ClickMouse(X, Y: Integer; Btn: TMouseButton);
+var
+  Client: TSCARClient;   
+  Pt: TPoint;    
+begin
+  Client := GetClient;
+  Pt := Client.Target.MousePos;
+  if (Pt.X <> X) or (Pt.Y <> Y) then
+    Client.Target.MousePos := Point(X, Y); 
+  Client.Target.MouseDown(Btn);     
+  Client.Target.MouseUp(Btn);
+end;   
+
+procedure MoveMouseExpert(X, Y, Gravity, Wind, MinWait, MaxWait, MaxStep, 
+  TargetArea: Float);
+begin
+  GetClient.Target.MoveMouse(Point(Round(X), Round(Y)), Gravity, Wind, MinWait, 
+    MaxWait, MaxStep, TargetArea);
+end;
+
+procedure MoveMouseEx(X, Y, MouseSpeed: Integer);
+begin       
+  GetClient.Target.MoveMouse(Point(X, Y), MouseSpeed);
+end;
+
+procedure MoveMouse(X, Y: Integer);
+begin
+  GetClient.Target.MoveMouse(Point(X, Y), 20);
+end;
+
+procedure MoveMouseBox(Box: TBox);
+begin
+  GetClient.Target.MoveMouse(Point(Box.X1 + Random(Box.Width), Box.Y1 + 
+    Random(Box.Height)), 20);
+end;     
+
+procedure MoveMouseBoxEx(Box: TBox; MouseSpeed: Integer);
+begin
+  GetClient.Target.MoveMouse(Point(Box.X1 + Random(Box.Width), Box.Y1 + 
+    Random(Box.Height)), MouseSpeed);
+end;
+
+function GetCursorType: TCursor; 
+begin
+  Result := GetClient.Target.CursorType;
+end;
+
+function GetMouseBtnState(Btn: TMouseButton): Boolean;
+begin
+  Result := GetClient.Target.IsMouseDown(Btn);
+end;
+  
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure GetMousePos(var P: TPoint); overload;
+Contributors: Wanted, ShadowRecon.
+Description: Wrapper for GetMousePos with point.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure GetMousePos(var P: TPoint); overload;
+begin
+  GetMousePos(P.X, P.Y);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function GetMousePos: TPoint; overload;
+Contributors: ShadowRecon.
+Description: Wrapper for GetMousePos with the point as result.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function GetMousePos: TPoint; overload;
+begin
+  GetMousePos(Result.X, Result.Y);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function MMouse(X, Y, RX, RY: Integer): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse with randoms and returns the final point.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function MMouse(X, Y, RX, RY: Integer): TPoint; overload;
+var
+  FP: TPoint;
+begin
+  FP := RndPoint(Point(X, Y), RX, RY);
+  Result := FP;
+  MoveMouse(FP.X, FP.Y);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function MMouse(P: TPoint; RX, RY: Integer): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse with randoms and returns the final point.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function MMouse(P: TPoint; RX, RY: Integer): TPoint; overload;
+begin
+  Result := MMouse(P.X, P.Y, RX, RY);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function MMouse(P: TPoint): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse with randoms and returns the final point.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function MMouse(P: TPoint): TPoint; overload;
+begin
+  Result := MMouse(P.X, P.Y, 0, 0);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function MMouse(Box: TBox): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse with randoms and returns the final point.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function MMouse(Box: TBox): TPoint; overload;
+begin
+  Result := RandomRectanglePoint(Box);
+  Result := MMouse(Result.X, Result.Y, 0, 0);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function MMouse(Box: TBox): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse with randoms and returns the final point.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function MMouse(CX, CY, Radius: Integer): TPoint; overload;
+begin
+  Result := RandomCirclePoint(CX, CY, Radius);
+  Result := MMouse(Result.X, Result.Y, 0, 0);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function MMouse(Box: TBox): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse with randoms and returns the final point.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function MMouse(P: TPoint; Radius: Integer): TPoint; overload;
+begin
+  Result := RandomCirclePoint(P.X, P.Y, Radius);
+  Result := MMouse(Result.X, Result.Y, 0, 0);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function HoldMouseWait(X, Y, RX, RY, MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse and clicks + holds humanly while returning the final point.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function HoldMouseWait(X, Y, RX, RY, MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := MMouse(X, Y, RX, RY); 
+  WaitRR(70, 100);
+  MouseBtnDown(Result.X, Result.Y, Btn); 
+  WaitRR(MinTime, MaxTime);
+  MouseBtnUp(Result.X, Result.Y, Btn);
+  WaitRR(100, 20);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function HoldMouseWait(P: TPoint; RX, RY, MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse and clicks + holds humanly while returning the final point.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function HoldMouseWait(P: TPoint; RX, RY, MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := HoldMouseWait(P.X, P.Y, RX, RY, MinTime, MaxTime, Btn);  
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function HoldMouseWaitBox(X1, Y1, X2, Y2, MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse in box and clicks + holds humanly.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function HoldMouseWaitBox(X1, Y1, X2, Y2, MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := RandomRectanglePoint(X1, Y1, X2, Y2);
+  Result := HoldMouseWait(Result.X, Result.Y, 0, 0, MinTime, MaxTime, Btn);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function HoldMouseWaitBox(B: TBox; MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse in box and clicks + holds humanly.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function HoldMouseWaitBox(B: TBox; MinTime, MaxTime: Integer; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := HoldMouseWaitBox(B.X1, B.Y1, B.X2, B.Y2, MinTime, MaxTime, Btn);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function Mouse(X, Y, RX, RY: Integer; Btn: TMouseButton): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse and clicks humanly.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function Mouse(X, Y, RX, RY: Integer; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := HoldMouseWait(X, Y, RX, RY, 80, 120, Btn);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure Mouse(P: TPoint; RX, RY: Integer; Left: Boolean); overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse to point and clicks humanly.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function Mouse(P: TPoint; RX, RY: Integer; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := Mouse(P.X, P.Y, RX, RY, Btn);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function Mouse(P: TPoint; Btn: TMouseButton): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse to point and clicks humanly.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function Mouse(P: TPoint; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := Mouse(P.X, P.Y, 0, 0, Btn);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function Mouse(Box: TBox; Btn: TMouseButton): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse to point within a box and clicks humanly.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function Mouse(Box: TBox; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := RandomRectanglePoint(Box);
+  Result := Mouse(Result.X, Result.Y, 0, 0, Btn);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function Mouse(CX, CY, Radius: Integer; Btn: TMouseButton): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse to point within a Circle and clicks humanly.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function Mouse(CX, CY, Radius: Integer; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := RandomCirclePoint(CX, CY, Radius);
+  Result := Mouse(Result.X, Result.Y, 0, 0, Btn);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function Mouse(CX, CY, Radius: Integer; Btn: TMouseButton): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Moves the mouse to point within a Circle and clicks humanly.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function Mouse(P: TPoint; Radius: Integer; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := Mouse(P.X, P.Y, Radius, Btn);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function DragMouse(SX, SY, SRX, SRY, EX, EY, ERX, ERY: Integer; Btn: TMouseButton): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: Clicks and holds the mouse and then drags it and releases it.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function DragMouse(SX, SY, SRX, SRY, EX, EY, ERX, ERY: Integer; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := MMouse(SX, SY, SRX, SRY);
+  WaitRR(60, 90);  
+  MouseBtnDown(Result.X, Result.Y, Btn);
+  WaitRR(80, 120);
+  MMouse(EX, EY, ERX, ERY);
+  WaitRR(60, 90);
+  GetMousePos(Result.X, Result.Y);
+  MouseBtnUp(Result.X, Result.Y, Btn);
+  WaitRR(100, 200);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function DragMouse(SP: TPoint; SRX, SRY: Integer; EP: TPoint; ERX, ERY: Integer; Btn: TMouseButton): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: See DragMouse. Except for does in box areas.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function DragMouse(SP: TPoint; SRX, SRY: Integer; EP: TPoint; ERX, ERY: Integer; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := DragMouse(SP.X, SP.Y, SRX, SRY, EP.X, EP.Y, ERX, ERY, Btn);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function DragMouse(SBox, EBox: TBox; Btn: TMouseButton): TPoint; overload;
+Contributors: Wanted, ShadowRecon.
+Description: See DragMouse. Except for does in box areas.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function DragMouse(SBox, EBox: TBox; Btn: TMouseButton): TPoint; overload;
+begin
+  Result := DragMouse(RandomRectanglePoint(SBox), 0, 0, RandomRectanglePoint(EBox), 0, 0, Btn);
+end;
+
+end.

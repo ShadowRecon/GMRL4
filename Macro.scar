@@ -1,0 +1,3 @@
+unit namespace Macro;
+
+uses Macro.Internal, Macro.External;

@@ -1,0 +1,12 @@
+unit namespace GMRL.Core;
+
+uses
+  GMRL.Core.Types,
+  GMRL.Core.Math,
+  GMRL.Core.Timing,
+  GMRL.Core.Points,
+  GMRL.Core.Client,
+  GMRL.Core.Color, 
+  GMRL.Core.Mouse,
+  GMRL.Core.Keyboard,
+  GMRL.Core.Bitmaps;

@@ -1,0 +1,236 @@
+unit Macro.External;
+
+interface
+
+uses Macro.Internal, Bitmaps;        
+
+type 
+  TKey = enum (      
+    // Mouse buttons
+    MouseLeft = 1, MouseRight = 2, MouseMiddle = 4, MouseExtra1 = 5, MouseExtra2 = 6,      
+    
+    // Toggle keys
+    CapsLock = 20, NumLock = 144,   
+    
+    // Special keys
+    Backspace = 8, Tab = 9, Shift = 16, Ctrl = 17, Alt = 18, ShiftLeft = 160,
+    ShiftRight = 161, CtrlLeft = 162, CtrlRight = 163, AltLeft = 164, AltRight = 165,
+    Space = 32, Return = 13,
+    
+    // Arrow keys
+    Left = 37, Up = 38, Right = 39, Down = 40,   
+    
+    // Function keys
+    F1 = 112, F2 = 113, F3 = 114, F4 = 115, F5 = 116, F6 = 117, F7 = 118, F8 = 119,
+    F9 = 120, F10 = 121, F11 = 122, F12 = 123, F13 = 124, F14 = 125, F15 = 126,
+    F16 = 127, F17 = 128, F18 = 129, F19 = 130, F20 = 131, F21 = 132, F22 = 133,
+    F23 = 134, F24 = 135, F25 = 136,    
+    
+    // Numpad numeric keys
+    Numpad0 = 96, Numpad1 = 97, Numpad2 = 98, Numpad3 = 99, Numpad4 = 100, 
+    Numpad5 = 101, Numpad6 = 102, Numpad7 = 103, Numpad8 = 104, Numpad9 = 105
+  );          
+
+  TTarget = partial class     
+    function Capture: TBitmap; overload;   
+    procedure ClickMouse(Btn: TMouseBtn; Ival: Integer = 0);                
+    procedure MoveMouse(Pt: TPoint; Gravity, Wind, MinWait, MaxWait, MaxStep, 
+      TargetArea: Float); overload;                     
+    procedure MoveMouse(Pt: TPoint; MouseSpeed: Integer = 25); overload;
+    procedure PressKey(KeyCode: Integer; Ival: Integer = 0); overload;    
+    procedure PressKey(Chr: string; Ival: Integer = 0); overload;  
+    procedure SendText(Text: string; UseNumpad: Boolean = False; 
+      PressIval: Integer = 20; PressIvalRnd: Integer = 60; 
+      CharIval: Integer = 40; CharIvalRnd: Integer = 80; 
+      ModIval: Integer = 40; ModIvalRnd: Integer = 80); virtual;
+  end;
+  
+implementation
+
+function TTarget.Capture: TBitmap;
+begin
+  Result := Capture(ImageArea);
+end;
+
+procedure TTarget.ClickMouse(Btn: TMouseBtn; Ival: Integer);
+begin
+  MouseDown(Btn);
+  Wait(Ival);
+  MouseUp(Btn);
+end; 
+
+procedure TTarget.MoveMouse(Pt: TPoint; Gravity, Wind, MinWait, MaxWait, 
+  MaxStep, TargetArea: Float); // WindMouse algorithm by Benjamin Land
+var
+  StartPt: TPoint;
+  SX, SY, VeloX, VeloY, WindX, WindY, VeloMag, Dist, RandomDist, Step: Float;
+  LastX, LastY: Integer; 
+const
+  Sqrt2 = Sqrt(2);
+  Sqrt3 = Sqrt(3);
+  Sqrt5 = Sqrt(5);
+begin
+  StartPt := MousePos; 
+  SX := StartPt.X; SY := StartPt.Y;   
+  WindX := 0; WindY := 0;
+  VeloX := 0; VeloY := 0;   
+  while Hypot(SX - Pt.X, SY - Pt.Y) > 1 do
+  begin   
+    Dist := Hypot(SX - Pt.X, SY - Pt.Y);
+    Wind := Min(Wind, Dist);
+    if Dist >= TargetArea then
+    begin
+      WindX := WindX / Sqrt3 + (Random(Round(Wind) * 2 + 1) - Wind) / Sqrt5;
+      WindY := WindY / Sqrt3 + (Random(Round(Wind) * 2 + 1) - Wind) / Sqrt5;
+    end else begin
+      WindX := WindX / Sqrt2;
+      WindY := WindY / Sqrt2;
+      if (MaxStep < 3) then
+        MaxStep := Random(3) + 3.0
+      else
+        MaxStep := MaxStep / Sqrt5;
+    end;
+    VeloX := VeloX + WindX;
+    VeloY := VeloY + WindY;
+    VeloX := VeloX + Gravity * (Pt.X - SX) / Dist;
+    VeloY := VeloY + Gravity * (Pt.Y - SY) / Dist;
+    if Hypot(VeloX, VeloY) > MaxStep then
+    begin
+      RandomDist := MaxStep / 2.0 + Random(Round(MaxStep) div 2);
+      VeloMag := Sqrt(VeloX * VeloX + VeloY * VeloY);
+      VeloX := (VeloX / VeloMag) * RandomDist;
+      VeloY := (VeloY / VeloMag) * RandomDist;
+    end;
+    LastX := Round(SX);
+    LastY := Round(SY);
+    SX += VeloX;
+    SY += VeloY;
+    if (LastX <> Round(SX)) or (LastY <> Round(SY)) then  
+      MousePos := Point(Round(SX), Round(SY)); 
+    Step := Hypot(SX - LastX, SY - LastY);
+    Wait(Round((MaxWait - MinWait) * (Step / MaxStep) + MinWait));
+  end;
+  if (Round(Pt.X) <> Round(SX)) or (Round(Pt.Y) <> Round(SY)) then
+    MousePos := Point(Round(SX), Round(SY));
+end;
+
+procedure TTarget.MoveMouse(Pt: TPoint; MouseSpeed: Integer);
+var
+  RandSpeed: Float;
+begin
+  RandSpeed := (Random(MouseSpeed) / 2 + MouseSpeed) / 10;
+  if RandSpeed = 0 then RandSpeed := 0.1;
+  MoveMouse(Pt, 9, 3, 10 / RandSpeed, 15 / RandSpeed, 10 * RandSpeed, 
+    10 * RandSpeed);
+end;
+
+procedure TTarget.PressKey(KeyCode: Integer; Ival: Integer);   
+begin   
+  KeyDown(KeyCode);
+  Wait(Ival);
+  KeyUp(KeyCode);
+end;
+ 
+procedure TTarget.PressKey(Chr: string; Ival: Integer);  
+begin    
+  KeyDown(Chr);
+  Wait(Ival);
+  KeyUp(Chr);
+end;
+
+procedure TTarget.SendText(Text: string; UseNumpad: Boolean; 
+  PressIval, PressIvalRnd, CharIval, CharIvalRnd, ModIval, ModIvalRnd: Integer);   
+var
+  Idx, Len, Key: Integer; 
+  Keys: TKeys;           
+  
+  procedure ReleaseAll; 
+  begin                     
+    if IsKeyDown(TKey.Shift) then KeyUp(TKey.Shift); 
+    if IsKeyDown(TKey.Ctrl) then KeyUp(TKey.Ctrl);  
+    if IsKeyDown(TKey.Alt) then KeyUp(TKey.Alt); 
+  end;
+  
+begin
+  if IsKeyToggled(TKey.CapsLock) then  
+  begin                  
+    KeyDown(TKey.CapsLock);                          
+    Wait(PressIval, PressIvalRnd); 
+    KeyUp(TKey.CapsLock);   
+  end;
+  Len := Length(Text);
+  for Idx := 1 to Len do
+  begin            
+    if Text[Idx] in [#0..#8, #11..#12, #14..#31, #127] then
+      Continue
+    else if UseNumpad and (Text[Idx] in ['0'..'9']) then
+    begin   
+      ReleaseAll;              
+      Key := TKey.Numpad0 + StrToInt(Text[Idx]);
+      KeyDown(Key); 
+      Wait(PressIval, PressIvalRnd); 
+      KeyUp(Key); 
+    end else if Text[Idx] = #9 then
+    begin               
+      ReleaseAll;     
+      KeyDown(TKey.Tab); 
+      Wait(PressIval, PressIvalRnd); 
+      KeyUp(TKey.Tab); 
+    end else if Text[Idx] in [#10, #13] then
+    begin               
+      ReleaseAll;     
+      KeyDown(TKey.Return); 
+      Wait(PressIval, PressIvalRnd); 
+      KeyUp(TKey.Return); 
+    end else if Text[Idx] = ' ' then
+    begin               
+      ReleaseAll;     
+      KeyDown(TKey.Space); 
+      Wait(PressIval, PressIvalRnd); 
+      KeyUp(TKey.Space); 
+    end else begin        
+      Keys := GetKeys(Text[Idx]);  
+      if Keys.KeyCode <> -1 then
+      begin
+        if Keys.Shift then
+        begin  
+          if not IsKeyDown(TKey.Shift) then
+          begin
+            Wait(ModIval, ModIvalRnd);
+            KeyDown(TKey.Shift);    
+          end;
+        end else 
+          if IsKeyDown(TKey.Shift) then KeyUp(TKey.Shift); 
+        if Keys.Ctrl then
+        begin  
+          if not IsKeyDown(TKey.Ctrl) then
+          begin
+            Wait(ModIval, ModIvalRnd);
+            KeyDown(TKey.Ctrl);     
+          end;
+        end else 
+          if IsKeyDown(TKey.Ctrl) then KeyUp(TKey.Ctrl);      
+        if Keys.Alt then
+        begin  
+          if not IsKeyDown(TKey.Alt) then
+          begin
+            Wait(ModIval, ModIvalRnd);
+            KeyDown(TKey.Alt);  
+          end;
+        end else 
+          if IsKeyDown(TKey.Alt) then KeyUp(TKey.Alt);                  
+        KeyDown(Keys.KeyCode); 
+        Wait(PressIval, PressIvalRnd); 
+        KeyUp(Keys.KeyCode);   
+      end else begin                  
+        KeyDown(Text[Idx]); 
+        Wait(PressIval, PressIvalRnd); 
+        KeyUp(Text[Idx]);   
+      end;
+    end;             
+    Wait(CharIval, CharIvalRnd); 
+  end;          
+  ReleaseAll; 
+end;
+
+end.

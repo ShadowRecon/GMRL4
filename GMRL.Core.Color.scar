@@ -1,0 +1,111 @@
+unit GMRL.Core.Color;
+
+interface
+uses 
+  Bitmaps;
+
+function CountColor(Color, XS, YS, XE, YE: Integer): Integer;        
+function CountColorTol(Color, XS, YS, XE, YE, Tol: Integer): Integer;
+function CountColors(Colors: TIntArray; XS, YS, XE, YE: Integer): Integer; 
+function CountColorsTol(Colors: TIntArray; XS, YS, XE, YE, Tol: Integer): Integer;  
+function FindColor(var X, Y: Integer; Color, XS, YS, XE, YE: Integer): Boolean; 
+function FindColorTol(var X, Y: Integer; Color, XS, YS, XE, YE, Tol: Integer): Boolean; 
+function FindColors(var X, Y: Integer; Colors: TIntArray; XS, YS, XE, YE: Integer): Boolean;
+function FindColorsTol(var X, Y: Integer; Colors: TIntArray; XS, YS, XE, YE, Tol: Integer): Boolean;  
+function FindColorEx(var Points: TPointArray; Color, XS, YS, XE, YE: Integer): Boolean;      
+function FindColorTolEx(var Points: TPointArray; Color, XS, YS, XE, YE, Tol: Integer): Boolean;   
+function FindColorsEx(var Points: TPointArray; Colors: TIntArray; XS, YS, XE, YE: Integer): Boolean;
+function FindColorsTolEx(var Points: TPointArray; Colors: TIntArray; XS, YS, XE, YE, Tol: Integer): Boolean;
+        
+implementation
+
+uses
+  GMRL.Core.Client;  
+  
+function CountColor(Color, XS, YS, XE, YE: Integer): Integer;
+begin
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));  
+  Result := Bmp.CountColor([Color]);
+end;      
+  
+function CountColorTol(Color, XS, YS, XE, YE, Tol: Integer): Integer;
+begin
+  // TODO: Tolmodes
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));  
+  Result := Bmp.CountColor([Color], Tol);
+end;  
+  
+function CountColors(Colors: TIntArray; XS, YS, XE, YE: Integer): Integer;
+begin
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE)); 
+  Result := Bmp.CountColor(Colors);
+end;      
+  
+function CountColorsTol(Colors: TIntArray; XS, YS, XE, YE, Tol: Integer): Integer;
+begin
+  // TODO: Tolmodes
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));  
+  Result := Bmp.CountColor(Colors, Tol);
+end;        
+  
+function FindColor(var X, Y: Integer; Color, XS, YS, XE, YE: Integer): Boolean;
+begin
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));  
+  var Pt: TPoint = Point(-1, -1);
+  Result := Bmp.FindColor(Pt, [Color]);
+  X := Pt.X; Y := Pt.Y;
+end;           
+
+function FindColorTol(var X, Y: Integer; Color, XS, YS, XE, YE, Tol: Integer): Boolean;
+begin       
+  // TODO: Tolmodes
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));    
+  var Pt: TPoint = Point(-1, -1);
+  Result := Bmp.FindColor(Pt, [Color], Tol);
+  X := Pt.X; Y := Pt.Y;
+end;          
+  
+function FindColors(var X, Y: Integer; Colors: TIntArray; XS, YS, XE, YE: Integer): Boolean;
+begin
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));    
+  var Pt: TPoint = Point(-1, -1);
+  Result := Bmp.FindColor(Pt, Colors);
+  X := Pt.X; Y := Pt.Y;
+end;           
+  
+function FindColorsTol(var X, Y: Integer; Colors: TIntArray; XS, YS, XE, YE, Tol: Integer): Boolean;
+begin       
+  // TODO: Tolmodes
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));    
+  var Pt: TPoint = Point(-1, -1);
+  Result := Bmp.FindColor(Pt, Colors, Tol);
+  X := Pt.X; Y := Pt.Y;
+end;       
+  
+function FindColorEx(var Points: TPointArray; Color, XS, YS, XE, YE: Integer): Boolean;
+begin
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));    
+  Result := Bmp.FindColor(Points, [Color]);
+end;           
+  
+function FindColorTolEx(var Points: TPointArray; Color, XS, YS, XE, YE, Tol: Integer): Boolean;
+begin       
+  // TODO: Tolmodes
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));   
+  Result := Bmp.FindColor(Points, [Color], Tol);
+end;          
+  
+function FindColorsEx(var Points: TPointArray; Colors: TIntArray; XS, YS, XE, YE: Integer): Boolean;
+begin
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));   
+  Result := Bmp.FindColor(Points, Colors);
+end;           
+  
+function FindColorsTolEx(var Points: TPointArray; Colors: TIntArray; XS, YS, XE, YE, Tol: Integer): Boolean;
+begin       
+  // TODO: Tolmodes
+  var Bmp = GetClient.Target.Capture(Box(XS, YS, XE, YE));    
+  Result := Bmp.FindColor(Points, Colors, Tol);
+end; 
+
+end.
