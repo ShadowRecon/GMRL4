@@ -1,0 +1,238 @@
+unit GMRL.TFunctions.ATPA;
+
+interface
+
+   procedure ATPAQuickSort(var A: TIntArray; var B: T2DPointArray; iLo, iHi: Integer; SortUp: Boolean);
+   procedure ATPASortFrom(var a: T2DPointArray; const From: TPoint);
+   procedure ATPASortFromSize(var a: T2DPointArray; const Size: Integer; CloseFirst: Boolean);
+   procedure ATPASortFromFirstPoint(var a: T2DPointArray; const From: TPoint);  
+   procedure ATPASortFromMidPoint(var a: T2DPointArray; const From: TPoint); 
+   procedure ATPAReverse(var a: T2DPointArray); 
+   procedure ATPASortSize(var a: T2DPointArray; const BigFirst: Boolean);
+   
+implementation 
+
+uses
+  GMRL.TFunctions.TPA; 
+         
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure ATPAQuickSort(var A: TIntArray; var B: T2DPointArray; iLo, iHi: Integer; SortUp: Boolean);
+Contributors: ShadowRecon.
+Description: Sorts T2DPointArray.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure ATPAQuickSort(var A: TIntArray; var B: T2DPointArray; iLo, iHi: Integer; SortUp: Boolean);
+var
+  Lo, Hi, Mid, T: Integer;
+  TP: TPointArray;
+begin
+  if (Length(A) <> Length(B)) then Exit;
+  Lo := iLo;
+  Hi := iHi;
+  Mid := A[(Lo + Hi) shr 1];
+  repeat
+    if SortUp then
+    begin
+      while (A[Lo] < Mid) do Inc(Lo);
+      while (A[Hi] > Mid) do Dec(Hi);
+    end else
+    begin
+      while (A[Lo] > Mid) do Inc(Lo);
+      while (A[Hi] < Mid) do Dec(Hi);
+    end;
+    if (Lo <= Hi) then
+    begin
+      T := A[Lo];
+      A[Lo] := A[Hi];
+      A[Hi] := T;
+      TP := B[Lo];
+      B[Lo] := B[Hi];
+      B[Hi] := TP;
+      Inc(Lo);
+      Dec(Hi);
+    end;
+  until Lo > Hi;
+  if (Hi > iLo) then ATPAQuickSort(A, B, iLo, Hi, SortUp);
+  if (Lo < iHi) then ATPAQuickSort(A, B, Lo, iHi, SortUp);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure ATPASortFrom(var a: T2DPointArray; const From: TPoint);
+Contributors: ShadowRecon.
+Description: Sorts the T2DPointArray a from the point From.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure ATPASortFrom(var a: T2DPointArray; const From: TPoint);
+var
+   i, l: Integer;
+begin
+  l := High(a);
+  if (l < 0) then Exit;
+  for i := 0 to l do
+    TPASortFrom(a[i], From);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure ATPASortFromFirstPoint(var a: T2DPointArray; const From: TPoint);
+Contributors: ShadowRecon.
+Description: Sorts the T2DPointArray a from the point From.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure ATPASortFromFirstPoint(var a: T2DPointArray; const From: TPoint);
+var
+   i, l: Integer;
+   DistArr: TIntArray;
+begin
+  l := High(a);
+  if (l < 0) then Exit;
+  DistArr.SetLength(l + 1);
+  for i := 0 to l do
+  begin
+    if length(a[i]) = 0 then continue;
+    DistArr[i] := Round(Sqr(From.x - a[i][0].x) + Sqr(From.y - a[i][0].y));
+  end;
+  ATPAQuickSort(DistArr, a, 0, l, True);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure ATPASortFromMidPoint(var a: T2DPointArray; const From: TPoint);
+Contributors: ShadowRecon.
+Description: Sorts the T2DPointArray a from the midpoint of each TPA by From.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure ATPASortFromMidPoint(var a: T2DPointArray; const From: TPoint);
+var
+   i, l: Integer;
+   DistArr: TIntArray;
+   MidPt: TPoint;
+begin
+  l := High(a);
+  if (l < 0) then Exit;
+  DistArr.SetLength(l + 1);
+  for i := 0 to l do
+  begin
+    MidPt := TPAMiddle(a[i]);
+    DistArr[i] := Round(Sqr(From.x - MidPt.x) + Sqr(From.y - MidPt.y));
+  end;
+  ATPAQuickSort(DistArr, a, 0, l, True);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure ATPAReverse(var a: T2DPointArray);
+Contributors: ShadowRecon.
+Description: Inverts / Reverts the T2DPointArray a.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure ATPAReverse(var a: T2DPointArray);
+var
+  i, l: Integer;
+  b: T2DPointArray;
+begin
+  l := High(a);
+  if (l < 0) then Exit;
+  b := a;
+  for i := l downto 0 do
+    a[l - i] := b[i];
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure ATPASortSize(var a: T2DPointArray; const BigFirst: Boolean);
+Contributors: ShadowRecon.
+Description: Sorts the T2DPointArray a from either largest or smallest, by the amount of points in the TPAs.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure ATPASortSize(var a: T2DPointArray; const BigFirst: Boolean);
+var
+   i, l: Integer;
+   SizeArr: TIntArray;
+begin
+  l := High(a);
+  if (l < 0) then Exit;
+  SizeArr.SetLength(l + 1);
+  for i := 0 to l do
+    SizeArr[i] := Length(a[i]);
+  ATPAQuickSort(SizeArr, a, 0, l, not BigFirst);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure ATPASortFromSize(var a: T2DPointArray; const Size: Integer; CloseFirst: Boolean);
+Contributors: ShadowRecon.
+Description: Combines the TPointArrays Ar1 and Ar2, and results the combination. 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure ATPASortFromSize(var a: T2DPointArray; const Size: Integer; CloseFirst: Boolean);
+var
+   i, l: Integer;
+   SizeArr: TIntArray;
+begin
+  l := High(a);
+  if (l < 0) then Exit;
+  SizeArr.SetLength(l + 1);
+  for i := 0 to l do
+    SizeArr[i] := Abs(Length(a[i]) - Size);
+  ATPAQuickSort(SizeArr, a, 0, l, CloseFirst);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Contributors: ShadowRecon.
+Description: 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Contributors: ShadowRecon.
+Description: 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Contributors: ShadowRecon.
+Description: 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Contributors: ShadowRecon.
+Description: 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Contributors: ShadowRecon.
+Description: 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=} 
+
+end.

@@ -1,0 +1,14 @@
+unit GMRL.Core.Boxes;
+
+interface
+
+  function BoxToStr(b: TBox): String;
+    
+implementation
+
+function BoxToStr(b: TBox): String;
+begin
+  Result := 'Box('+IntToStr(B.X1)+', '+IntToStr(B.Y1)+', '+IntToStr(B.X2)+', '+IntToStr(B.Y2)+')';
+end;
+
+end.

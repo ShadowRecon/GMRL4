@@ -1,0 +1,6 @@
+unit namespace GMRL.TFunctions;
+
+uses
+  GMRL.TFunctions.TPA,
+  GMRL.TFunctions.ATPA,
+  GMRL.TFunctions.TIA;

@@ -1,0 +1,280 @@
+unit GMRL.TFunctions.TIA;
+
+interface
+
+  procedure TIAQuickSort(var A: TIntArray; iLo, iHi: Integer);
+  procedure TIASort(var A: TIntArray; iLo, iHi: Integer);  
+  procedure TIAUnique(var a: TIntArray); 
+  procedure TUnique(var a: TIntArray; var p: TPointArray); 
+  function TIAMin(a: TIntArray): Integer;
+  function TIAMax(a: TIntArray): Integer; 
+  function TIACombine(const Ar1, Ar2: TIntArray): TIntArray;
+  function TIAContainsEx(const a: TIntArray; var Where: Integer; const Number: Integer): Boolean; 
+  function TIAContains(const a: TIntArray; Number: Integer): Boolean;
+  
+implementation  
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure TIAQuickSort(var A: TIntArray; iLo, iHi: Integer);
+Contributors: ShadowRecon.
+Description: Sorts TIA
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+         
+procedure TIAQuickSort(var A: TIntArray; iLo, iHi: Integer);
+var
+  Lo, Hi, Pivot, T: Integer;
+begin
+  Lo := iLo;
+  Hi := iHi;
+  Pivot := A[(Lo + Hi) div 2];
+  repeat
+    while A[Lo] < Pivot do Inc(Lo) ;
+    while A[Hi] > Pivot do Dec(Hi) ;
+    if Lo <= Hi then
+    begin
+      T := A[Lo];
+      A[Lo] := A[Hi];
+      A[Hi] := T;
+      Inc(Lo) ;
+      Dec(Hi) ;
+    end;
+  until Lo > Hi;
+  if Hi > iLo then TIAQuickSort(A, iLo, Hi) ;
+  if Lo < iHi then TIAQuickSort(A, Lo, iHi) ;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure TIASort(var A: TIntArray; iLo, iHi: Integer);
+Contributors: ShadowRecon.
+Description: Sorts TIA
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+procedure TIASort(var A: TIntArray; iLo, iHi: Integer);
+begin
+  TIAQuickSort(A, iLo, iHi);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function TIAMin(a: TIntArray): Integer;
+Contributors: ShadowRecon.
+Description: Sorts TIA
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function TIAMin(a: TIntArray): Integer;
+var
+  L, i: Integer;
+begin
+  L := High(a);
+  if (L < 0) then
+    Exit(0);
+
+  Result := a[0];
+
+  for i := 1 to L do
+    if (a[i] < Result) then
+      Result := a[i];
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function TIAMax(a: TIntArray): Integer;
+Contributors: ShadowRecon.
+Description: Sorts TIA
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function TIAMax(a: TIntArray): Integer;
+var
+  L, i: Integer;
+begin
+  L := High(a);
+  if (L < 0) then
+    exit(0);
+
+  Result := a[0];
+
+  for i := 1 to L do
+    if (a[i] > Result) then
+      Result := a[i];
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function TIACombine(const Ar1, Ar2: TIntArray): TIntArray;
+Contributors: ShadowRecon.
+Description: Combines the TIntegerArrays Ar1 and Ar2, and results the combination.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function TIACombine(const Ar1, Ar2: TIntArray): TIntArray;
+var
+  i, l1, l2: Integer;
+begin
+  Result := Ar1;
+  l1 := Length(Result);
+  l2 := Length(Ar2);
+  Result.SetLength(l1 + l2);
+  for i := 0 to l2 -1 do
+    Result[i + l1] := Ar2[i];
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function TIAContainsEx(const a: TIntArray; var Where: Integer; const Number: Integer): Boolean;
+Contributors: ShadowRecon.
+Description: Returns true if the integer Number was found in the integer array a, and stores the index to Where.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function TIAContainsEx(const a: TIntArray; var Where: Integer; const Number: Integer): Boolean;
+var
+  i, l: Integer;
+begin
+  Result := False;
+  l := High(a);
+  for i := 0 to l do
+    if (a[i] = Number) then
+    begin
+      Where := i;
+      Result := True;
+      Exit;
+    end;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function TIAContains(const a: TIntArray; Number: Integer): Boolean;
+Contributors: ShadowRecon.
+Description: Returns true if the integer Number was found in the integer array a.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function TIAContains(const a: TIntArray; Number: Integer): Boolean;
+var
+  i, l: Integer;
+begin
+  Result := False;
+  l := High(a);
+  for i := 0 to l do
+    if (a[i] = Number) then
+    begin
+      Result := True;
+      Exit;
+    end;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure TIAUnique(var a: TIntArray);
+Contributors: ShadowRecon.
+Description: Clears the duplicates in the integer array a.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=} 
+
+procedure TIAUnique(var a: TIntArray);
+var
+  i, t, c, l: Integer;
+  b: TIntArray;
+  Found: Boolean;
+begin
+  b := a;
+  l := High(b);
+  c := 0;
+  for i := 0 to l do
+  begin
+    Found := False;
+    for t := 0 to c -1 do
+      if (b[i] = a[t]) then
+      begin
+        Found := True;
+        Break;
+      end;
+    if not Found then
+//    if (t >= c) then
+    begin
+      a[c] := b[i];
+      Inc(c);
+    end;
+  end;
+  a.SetLength(c);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+procedure TUnique(var a: TIntArray; var p: TPointArray);
+Contributors: ShadowRecon.
+Description: Clears the duplicates in the integer array a and the TPointArray p.
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=} 
+
+procedure TUnique(var a: TIntArray; var p: TPointArray);
+var
+  i, t, c, l: Integer;
+  b: TIntArray;
+  Found: Boolean;
+begin
+  b := a;
+  l := b[b.High];
+  c := 0;
+  for i := 0 to l do
+  begin
+    Found := false;
+    for t := 0 to c -1 do
+      if (b[i] = a[t]) then
+      begin
+        Found := true;
+        Break;
+      end;
+    if not Found then
+    begin
+      a.SetLength(c +1);
+      a[c] := b[i];
+      p[c] := p[i];
+      Inc(c);
+    end;
+  end;
+  p.SetLength(c);
+  a.SetLength(c);
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Contributors: ShadowRecon.
+Description: 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=} 
+
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Contributors: ShadowRecon.
+Description: 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=} 
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Contributors: ShadowRecon.
+Description: 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=} 
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Contributors: ShadowRecon.
+Description: 
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=} 
+
+
+end.

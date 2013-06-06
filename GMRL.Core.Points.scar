@@ -4,11 +4,17 @@ interface
 uses 
   GMRL.Core.Types;
     
-  function Point(X, Y: Integer): TPoint;
+  function Point(const X: Integer; const Y: Integer): TPoint;
   function RndPoint(SP: TPoint; RX, RY: Integer): TPoint; 
   function RndPointInArea(SP, EP: TPoint): TPoint;
   function Distance(X1, Y1, X2, Y2: Integer): Float; overload;
-  function Distance(P1, P2: TPoint): Float; overload;
+  function Distance(P1, P2: TPoint): Float; overload; 
+  function PointToStr(P: TPoint): String;                                           
+  function GetPointAngleDegrees(P1, P2: TPoint): Float;
+  function RotatePoints(const P: TPointArray;const A, cx, cy: Float): TPointArray; 
+  function RotatePoint(const p: TPoint;const angle, mx, my: Float): TPoint;
+  function ChangeDistPT(const PT : TPoint; mx,my : integer; newdist : float) : TPoint;
+  function ChangeDistTPA(var TPA : TPointArray; mx,my : integer; newdist : float) : boolean;
   
 implementation
 
@@ -16,14 +22,14 @@ uses
   GMRL.Core.Math;
 
 {=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-function Point(X, Y: Integer): TPoint;
+function Point(const X: Integer; const Y: Integer): TPoint;
 Contributors: ShadowRecon.
 Description: Creates a TPoint from x and y.
 Date Created: June 3rd, 2013. By ShadowRecon.
 Last Modified: June 3rd, 2013. By ShadowRecon.
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
 
-function Point(X, Y: Integer): TPoint;
+function Point(const X: Integer; const Y: Integer): TPoint;
 begin 
   Result.X := X;
   Result.Y := Y;
@@ -102,6 +108,92 @@ begin
   {$ENDIF}  
 end;
 
- 
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RotatePoints(const P: TPointArray;const A, cx, cy: Float): TPointArray;
+Contributors: ShadowRecon.
+Description: Rotates points around point cx,cy in radians (A).
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RotatePoints(const P: TPointArray;const A, cx, cy: Float): TPointArray;
+begin
+  var L := High(P);
+  Result.SetLength(L + 1);
+  for var I := 0 to L do
+  begin
+    Result[I].X := Round(cx + cos(A) * (p[i].x - cx) - sin(A) * (p[i].y - cy));
+    Result[I].Y := Round(cy + sin(A) * (p[i].x - cx) + cos(A) * (p[i].y - cy));
+  end;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function RotatePoint(const p: TPoint;const angle, mx, my: Float): TPoint;
+Contributors: ShadowRecon.
+Description: Rotates point (p) around point (cx,cy) in radians (A).
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function RotatePoint(const p: TPoint;const angle, mx, my: Float): TPoint;
+
+begin
+  Result.X := Round(mx + cos(angle) * (p.x - mx) - sin(angle) * (p.y - my));
+  Result.Y := Round(my + sin(angle) * (p.x - mx) + cos(angle) * (p.y- my));
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function ChangeDistPT(const PT : TPoint; mx,my : integer; newdist : float) : TPoint;
+Contributors: ShadowRecon.
+Description: Changes the distance between the moint mx and my by newdist
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function ChangeDistPT(const PT : TPoint; mx,my : integer; newdist : float) : TPoint;
+begin
+  var angle := ArcTan2(pt.y-my,pt.x-mx);
+  result.x := round(cos(angle) * newdist) + mx;
+  result.y := round(sin(angle) * newdist) + my;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function ChangeDistPT(const PT : TPoint; mx,my : integer; newdist : float) : TPoint;
+Contributors: ShadowRecon.
+Description: Changes the distance between the moint mx and my by newdist
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function ChangeDistTPA(var TPA : TPointArray; mx,my : integer; newdist : float) : boolean;
+begin
+  result := false;
+  if length(TPA) < 1 then
+    exit;
+  result := true;
+  try
+    for var i := high(TPA) downto 0 do
+    begin
+      var angle := ArcTan2(TPA[i].y-my,TPA[i].x-mx);
+      TPA[i].x := round(cos(angle) * newdist) + mx;
+      TPA[i].y := round(sin(angle) * newdist) + my;
+    end;
+  except
+    result := false;
+  end;
+end;
+
+{=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+function PointToStr(P: TPoint): String;
+Contributors: ShadowRecon.
+Description: turns a point into a readable string
+Date Created: June 3rd, 2013. By ShadowRecon.
+Last Modified: June 3rd, 2013. By ShadowRecon.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=}
+
+function PointToStr(P: TPoint): String;
+begin
+  Result := 'Point('+IntToStr(P.X)+', '+IntToStr(P.Y)+')';
+end;
 
 end.

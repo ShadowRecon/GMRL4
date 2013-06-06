@@ -20,6 +20,7 @@ interface
   procedure CartesianToPolarDegrees(P: TPoint; var Radius: Float; var Degrees: Float); overload;
   function PolarToCartesianRadians(Radius, Radians: Float): TPoint; 
   function PolarToCartesianDegrees(Radius: Float; Degrees: Float): TPoint; 
+  procedure SwapE(var a, b: Float);
 
   
 implementation
@@ -270,6 +271,15 @@ Last Modified: June 3rd, 2013. By ShadowRecon.
 function PolarToCartesianDegrees(Radius: Float; Degrees: Float): TPoint; 
 begin
   Result := PolarToCartesianRadians(Radius, DegreesToRadians(Degrees));
+end;
+
+procedure SwapE(var a, b: Float);
+var
+   c: Float;
+begin
+  c := a;
+  a := b;
+  b := c;
 end;
 
 end.

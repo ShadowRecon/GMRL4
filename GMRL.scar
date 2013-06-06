@@ -1,4 +1,5 @@
 unit namespace GMRL;
 
 uses
-  GMRL.Core;
+  GMRL.Core,
+  GMRL.TFunctions;

@@ -1,0 +1,24 @@
+uses GMRL;
+
+// This file is built to test the operation of the TPA functions in a controlled environment.
+// Still needs quite a bit of functiosn added, so far randoms functions have just been tested. 
+
+begin
+  var TPA : TPointArray; 
+  TPA.Add(Point(5, 5));
+  TPA.Add(Point(15, 0));
+  TPA.Add(Point(10, 10));
+  TPA.Add(Point(100, 100));
+  TPA.Add(Point(456, 345));
+  
+  var b := TPABounds(TPA); 
+  Writeln('TPABounds Results := ' + BoxToStr(b)+' - Expected Results = Box(5, 0, 100, 100)'); 
+  
+  var TPA1 := TPAFastSort(TPA, [5, 10], 100, False);
+  Writeln('TPAFastSort Results High Point = ' + PointToStr(TPA1[TPA1.High]) + ' Low Point = ' 
+              + PointToStr(TPA1[TPA1.Low]) + ' - Length of resulting TPA = '+IntToStr(TPA1.Length));  
+              
+  var ATAP := TPAtoATPA(TPA, 10);
+  Writeln('TPAtoATPA Results High Point = ' + PointToStr(ATAP[ATAP.High][ATAP[ATAP.High].High]) + ' Low Point = ' 
+              + PointToStr(ATAP[ATAP.Low][ATAP[ATAP.Low].Low]) + ' - Length of resulting ATAP = '+IntToStr(ATAP.Length));
+end;

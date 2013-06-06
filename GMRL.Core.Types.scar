@@ -4,6 +4,9 @@ interface
 
 type 
   TStringArray = array of String;
+  
+  TBoolArray = array of Boolean;
+  T2DBoolArray = array of TBoolArray;
    
   TBoxHelper = helper for TBox    
     function Contains(Pt: TPoint): Boolean;
